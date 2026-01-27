@@ -19,6 +19,40 @@ static block_t *free_list[MAX_ORDER + 1];
 
 #define GET_BLOCK(ptr) ((block_t *)ptr)
 
+void list_add(block_t *block, int order)
+{
+    block->order = order;
+    block->is_free = 1;
+    block->next = free_list[order];
+    block->prev = NULL;
+
+    if (free_list[order] != NULL)
+    {
+        free_list[order]->prev = block;
+    }
+    free_list[order] = block;
+}
+
+void list_remove(block_t *block)
+{
+    if (block->prev)
+    {
+        block->prev->next = block->next;
+    }
+    else
+    {
+        free_list[block->order] = block->next;
+    }
+    if (block->next)
+    {
+        block->next->prev = block->prev;
+    }
+
+    block->next = NULL;
+    block->prev = NULL;
+    block->is_free = 0;
+}
+
 void buddy_init()
 {
     heap_start = (uint8_t *)malloc(RAM_SIZE);
