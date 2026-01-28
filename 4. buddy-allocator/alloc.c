@@ -75,3 +75,38 @@ void buddy_init()
 
     free_list[MAX_ORDER] = root_block;
 }
+
+void *buddy_alloc(int8_t req_order)
+{
+    uint8_t curr_order;
+    for (curr_order = req_order; curr_order <= MAX_ORDER; curr_order++)
+    {
+        if (free_list[curr_order] != NULL)
+        {
+            block_t *block = free_list[curr_order];
+            list_remove(block);
+
+            while (curr_order > req_order)
+            {
+                curr_order--;
+                block_t *block = (block_t *)((uint8_t)block + (PAGE_SIZE << curr_order));
+                list_add(block, curr_order);
+            }
+            block->is_free = 0;
+            block->order = curr_order;
+            return (void *)block;
+        }
+    }
+    return NULL;
+}
+
+void buddy_free(block_t *ptr)
+{
+    if (ptr == NULL)
+    {
+        return NULL;
+    }
+
+    block_t *block = (block_t *)ptr;
+    int curr_order = block->order;
+}
