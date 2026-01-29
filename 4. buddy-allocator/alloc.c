@@ -109,4 +109,32 @@ void buddy_free(block_t *ptr)
 
     block_t *block = (block_t *)ptr;
     int curr_order = block->order;
+    while (curr_order < MAX_ORDER)
+    {
+        size_t block_size = PAGE_SIZE << curr_order;
+        size_t offset = (uint8_t *)block - heap_start;
+        size_t buddy_offset = offset ^ block_size;
+
+        block_t *buddy = (block_t *)(heap_start + buddy_offset);
+
+        if (!buddy->is_free || buddy->order != curr_order)
+        {
+            break; // Cannot merge
+        }
+
+        // merge
+        printf("  Merging %p with buddy %p (Order %d -> %d)\n", block, buddy, curr_order, curr_order + 1);
+
+        list_remove(buddy);
+
+        if (buddy < block)
+        {
+            block = buddy;
+        }
+
+        curr_order++;
+        block->order = curr_order;
+    }
+
+    list_add(block, curr_order);
 }
