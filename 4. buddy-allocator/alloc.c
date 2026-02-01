@@ -89,8 +89,8 @@ void *buddy_alloc(int8_t req_order)
             while (curr_order > req_order)
             {
                 curr_order--;
-                block_t *block = (block_t *)((uint8_t)block + (PAGE_SIZE << curr_order));
-                list_add(block, curr_order);
+                block_t *buddy = (block_t *)((uint8_t *)block + (PAGE_SIZE << curr_order));
+                list_add(buddy, curr_order);
             }
             block->is_free = 0;
             block->order = curr_order;
@@ -104,7 +104,7 @@ void buddy_free(block_t *ptr)
 {
     if (ptr == NULL)
     {
-        return NULL;
+        return;
     }
 
     block_t *block = (block_t *)ptr;
